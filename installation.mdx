@@ -1,0 +1,168 @@
+---
+title: Installation Guide
+description: Step-by-step instructions to set up the CometFallDev project, including dependencies, environment configuration, and initial bot launch.
+---
+
+## Prerequisites
+
+Before installing CometFallDev, ensure your system meets these requirements.
+
+<Callout kind="info">
+
+CometFallDev requires:
+
+- Python `{3.10}+` (recommend `{3.12}`)
+- PostgreSQL `{15}+`
+- Git `{2.30}+`
+- System with at least `{2GB}` RAM for development
+
+</Callout>
+
+Verify your Python version:
+
+````bash
+python --version
+````
+
+If needed, install Python from [python.org](https://www.python.org/downloads/).
+
+## Installation Steps
+
+Follow these steps to clone, configure, and launch the bot.
+
+<Steps>
+  <Step title="Clone Repository" icon="download">
+
+    Open your terminal and clone the repository:
+
+    ````bash
+    git clone https://github.com/TeraCodeFrame/CometFallDev.git
+    cd CometFallDev
+    ````
+
+  </Step>
+
+  <Step title="Install Dependencies" icon="package">
+
+    Create a virtual environment and install packages using pip:
+
+    <Tabs>
+      <Tab title="pip (Recommended)" icon="python">
+
+````bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+pip install -r requirements.txt
+````
+
+      </Tab>
+      <Tab title="uv (Faster)" icon="zap">
+
+````bash
+pipx install uv
+uv venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+uv pip install -r requirements.txt
+````
+
+      </Tab>
+    </Tabs>
+
+    Key dependencies include `aiogram`, `tortoise-orm`, `pydantic`, and `psycopg2`.
+
+  </Step>
+
+  <Step title="Configure Environment" icon="settings">
+
+    Copy the example environment file and edit it:
+
+    ````bash
+    cp .env.example .env
+    ````
+
+    Edit `.env` with your values:
+
+````ini
+BOT_TOKEN=YOUR_BOT_TOKEN_HERE
+DATABASE_URL=postgres://username:password@localhost:5432/cometfall
+DEBUG=true
+````
+
+    Obtain `BOT_TOKEN` from [@BotFather](https://t.me/BotFather) on Telegram.
+
+    Create PostgreSQL database:
+
+    ````bash
+    createdb cometfall  # Or use psql/psql GUI
+    ````
+
+  </Step>
+
+  <Step title="Database Setup" icon="database">
+
+    Initialize Tortoise ORM models and run migrations:
+
+    ````bash
+    python -m src.bot.db.migrate up
+    ````
+
+    This generates tables for `Users`, `Items`, `Enemies` from `src/bot/db/models.py`.
+
+    <Callout kind="tip">
+
+    Verify connection:
+
+    ````bash
+    python -m src.bot.db shell
+    ````
+
+    Exit with `exit()`.
+
+    </Callout>
+
+  </Step>
+
+  <Step title="Launch the Bot" icon="rocket">
+
+    Start the bot:
+
+    ````bash
+    python -m src.bot
+    ````
+
+    The bot registers handlers from `src/bot/handlers/`, keyboards from `src/bot/keyboards/`, and services from `src/bot/services/`.
+
+    Test by messaging [@CometFall_bot](https://t.me/CometFall_bot).
+
+  </Step>
+</Steps>
+
+## Next Steps
+
+<Columns cols={3}>
+  <Card title="Play Now" icon="play" href="https://t.me/CometFall_bot" target="_blank">
+    Battle enemies and level up your sword in Telegram.
+  </Card>
+
+  <Card title="Project Structure" icon="folder" href="#project-structure">
+    Explore `src/bot/` organization.
+  </Card>
+
+  <Card title="Team" icon="users" href="https://t.me/TeraCodeFrame" target="_blank">
+    Join @TeraCodeFrame for support.
+  </Card>
+</Columns>
+
+## Troubleshooting
+
+<Expandable title="Common Issues" default-open="true">
+
+- **ModuleNotFoundError**: Activate virtual environment (`source venv/bin/activate`).
+- **Database connection failed**: Check `DATABASE_URL` credentials and ensure PostgreSQL runs on default port `{5432}`.
+- **Bot not responding**: Verify `BOT_TOKEN` and polling mode in `src/bot/config.py`.
+
+</Expandable>
+
+Congratulations! Your CometFallDev bot is ready. Fight enemies, collect drops, and compete—all from Telegram.

@@ -1,0 +1,134 @@
+---
+title: Changelog
+description: Track the evolution of CometFallDev with version history, highlighting recent updates, new features, and fixes.
+---
+
+## Recent Releases
+
+Stay current with CometFallDev by reviewing the latest updates. You receive new features like enhanced battle mechanics, bug fixes for inventory management, and performance improvements for Telegram interactions.
+
+<Update label="2024-10-15" description="v1.2.0" tags={["feature", "improvement"]}>
+
+## New Features
+
+- Added multi-enemy battles: Fight up to 3 enemies simultaneously using `/battle` command.
+- Introduced rare item drops: Collect legendary swords with `+20%` damage boost.
+- New leaderboard: View top players with `/top` showing `{rank}`, `{username}`, `{level}`.
+
+## Improvements
+
+- Optimized Tortoise ORM queries for `<50ms` response times.
+- Enhanced Aiogram middleware for better logging of game events.
+
+## Bug Fixes
+
+- Fixed inventory overflow when dropping items exceeds `{max_slots}`.
+- Resolved callback query timeouts during peak hours.
+
+</Update>
+
+<Update label="2024-09-20" description="v1.1.0" tags={["feature", "bugfix"]}>
+
+## New Features
+
+- Player shops: Buy and sell items via `/shop` with Pydantic-validated prices.
+- Daily quests: Earn rewards for completing tasks like "Defeat 5 goblins".
+
+## Bug Fixes
+
+- Corrected damage calculation in `game/logic/damage.py` for armor penetration.
+- Patched PostgreSQL connection leaks in high-traffic scenarios.
+
+</Update>
+
+<Update label="2024-08-10" description="v1.0.0" tags={["breaking", "feature"]}>
+
+## Breaking Changes
+
+- Updated user model schema: `{energy}` field now defaults to `100` instead of `50`.
+- Removed deprecated `/oldbattle` command; migrate to `/battle`.
+
+## New Features
+
+- Core battle system with enemies from `db/models.py`.
+- Inventory management using `services/inventory.py`.
+
+## Initial Setup
+
+- Full Aiogram bot structure with handlers in `src/bot/handlers/`.
+
+</Update>
+
+## Breaking Changes Summary
+
+Review these changes before updating to avoid disruptions.
+
+<Callout kind="danger">
+Breaking changes in v1.0.0 require schema migrations. Run `aerich migrate` after pulling updates.
+</Callout>
+
+## Migration Guide
+
+Follow these steps to update your local development environment or production deployment.
+
+<Steps>
+  <Step title="Backup Database" icon="database">
+    Export your PostgreSQL data:
+    
+````bash
+pg_dump cometfall_db > backup_$(date +%Y%m%d).sql
+````
+  </Step>
+  
+  <Step title="Pull Updates" icon="download">
+    <CodeGroup tabs="Git,Docker">
+````bash
+git pull origin main
+pip install -r requirements.txt
+````
+````dockerfile
+docker-compose pull
+docker-compose up -d
+````
+    </CodeGroup>
+  </Step>
+  
+  <Step title="Run Migrations" icon="settings">
+    Apply Tortoise ORM changes:
+    
+````bash
+aerich upgrade
+aerich compile
+````
+  </Step>
+  
+  <Step title="Restart Bot" icon="zap">
+    Restart Aiogram bot process and test `/start` command.
+  </Step>
+</Steps>
+
+## Upcoming Features
+
+Watch for these enhancements in future releases. Provide feedback via @TeraCodeFrame.
+
+<Columns cols={2}>
+  <Card title="Guild System" icon="users" href="#">
+    Form alliances, shared inventories, guild wars.
+  </Card>
+  
+  <Card title="PvP Arenas" icon="sword" href="#">
+    Real-time player vs player combat in Telegram.
+  </Card>
+  
+  <Card title="Advanced Crafting" icon="hammer" href="#">
+    Combine items for powerful gear using new recipes.
+  </Card>
+  
+  <Card title="Events & Tournaments" icon="trophy" href="#">
+    Weekly competitions with exclusive rewards.
+  </Card>
+</Columns>
+
+<Callout kind="tip">
+Join @CometFall_bot to test features live. Report issues on GitHub for priority fixes.
+</Callout>

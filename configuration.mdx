@@ -1,0 +1,178 @@
+---
+title: Configuration Options
+description: Detailed guide on customizing the bot's settings, database models, and game parameters using config files and environment variables.
+---
+
+## Overview
+
+CometFall loads all configuration from `.env` files through `src/bot/config.py`. This centralizes settings for the Telegram bot, database connections, and game mechanics like damage calculations and drop rates. You customize behavior by editing environment variables and Python config mappings.
+
+Use `python-dotenv` to load `.env` automatically. Changes require restarting the bot.
+
+<Callout kind="info">
+  Always back up your `.env` file before modifications. Test changes in a development environment first.
+</Callout>
+
+## Quick Configuration Sections
+
+<Columns cols={3}>
+  <Card title="Environment Variables" icon="settings" href="#environment-variables">
+    Core bot token, database URL, and logging levels.
+  </Card>
+  <Card title="Game Parameters" icon="zap" href="#game-parameters">
+    Adjust damage, drops, and enemy stats.
+  </Card>
+  <Card title="Text Mappings" icon="message-circle" href="#text-mappings">
+    Customize messages and UI strings.
+  </Card>
+</Columns>
+
+## Environment Variables
+
+Set up your `.env` file in the project root. Here are the essential variables:
+
+| Variable              | Description                                      | Default/Example Value                  |
+|-----------------------|--------------------------------------------------|----------------------------------------|
+| `BOT_TOKEN`           | Telegram Bot API token                           | `your_bot_token_here`                  |
+| `DATABASE_URL`        | PostgreSQL connection string                     | `postgres://user:pass@localhost/cometfall` |
+| `LOG_LEVEL`           | Logging verbosity                                | `INFO`                                 |
+| `MAX_ENEMIES_PER_USER` | Limit enemies fought per session                | `10`                                   |
+| `DROP_RATE`           | Base drop chance (0.0-1.0)                       | `0.15`                                 |
+
+<Steps>
+  <Step title="Create .env" icon="file">
+    Copy the example `.env.example` to `.env` and fill in your values.
+  </Step>
+  <Step title="Load in Code" icon="code">
+    Ensure `src/bot/config.py` loads it:
+
+````python
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+DATABASE_URL = os.getenv("DATABASE_URL")
+````
+
+  </Step>
+  <Step title="Validate" icon="check-circle">
+    Run `python -c "from src.bot.config import *; print(BOT_TOKEN)"` to test.
+  </Step>
+</Steps>
+
+## Game Parameters
+
+Adjust combat and economy in `src/bot/game/config.py`. Override defaults from `.env`.
+
+<Tabs>
+  <Tab title="Damage Calculation" icon="sword">
+    Modify attack formulas:
+
+````python
+# src/bot/game/logic/damage.py
+BASE_DAMAGE = float(os.getenv("BASE_DAMAGE", 10.0))
+ARMOR_REDUCTION = float(os.getenv("ARMOR_REDUCTION", 0.3))
+
+def calculate_damage(atk, defense):
+    return max(1, atk * (1 - defense * ARMOR_REDUCTION)) + BASE_DAMAGE
+````
+
+    <Callout kind="tip">
+      Increase `BASE_DAMAGE` for faster progression in early game.
+    </Callout>
+  </Tab>
+  <Tab title="Drop Rates" icon="gift">
+    Configure loot probabilities:
+
+````python
+# src/bot/game/config.py
+DROP_RATE = float(os.getenv("DROP_RATE", 0.15))
+RARE_DROP_MULTIPLIER = float(os.getenv("RARE_DROP_MULTIPLIER", 0.05))
+
+def get_drop_chance(item_rarity):
+    return DROP_RATE * (1 + item_rarity * RARE_DROP_MULTIPLIER)
+````
+
+  </Tab>
+</Tabs>
+
+## Text Mappings
+
+Localize or customize messages in `src/bot/game/config.py`:
+
+<CodeGroup tabs="Common,Combat">
+```python
+# Common messages
+TEXT = {
+    "welcome": "Welcome to CometFall! Fight enemies and level up.",
+    "inventory_full": "Your inventory is full!"
+}
+```
+
+```python
+# Combat messages
+TEXT.update({
+    "enemy_defeated": "You defeated {enemy_name}! Gained {xp} XP.",
+    "level_up": "Level up! Your sword is now stronger."
+})
+```
+</CodeGroup>
+
+## Database Schemas
+
+Edit `src/bot/db/models.py` for custom fields. Use Pydantic in `src/bot/db/schemas/` for validation.
+
+<Expandable title="Example: Add Player Stamina" default-open="true">
+  In `models.py`:
+
+````python
+from tortoise import Model, fields
+
+class User(Model):
+    id = fields.BigIntField(pk=True)
+    stamina = fields.IntField(default=100)  # New field
+    max_stamina = fields.IntField(default=100)
+```
+
+  Validate in `schemas/user.py`:
+
+````python
+from pydantic import BaseModel, Field
+
+class UserSchema(BaseModel):
+    stamina: int = Field(ge=0, le=1000)
+````
+
+</Expandable>
+
+## Troubleshooting Common Issues
+
+<ExpandableGroup>
+  <Expandable title="Bot Token Invalid">
+    Verify `BOT_TOKEN` in `.env`. Get a new one from @BotFather.
+  </Expandable>
+  <Expandable title="Database Connection Failed">
+    Check `DATABASE_URL` format. Test with `psql $DATABASE_URL`.
+  </Expandable>
+  <Expandable title="Low Drop Rates">
+    Increase `DROP_RATE` above `0.20` and restart the bot.
+  </Expandable>
+</ExpandableGroup>
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant Env as .env
+    participant Config as config.py
+    participant Services as Services
+    U->>Env: Set variables
+    Env->>Config: load_dotenv()
+    Config->>Services: os.getenv()
+    Services->>Game: Apply params
+```
+
+<Callout kind="success">
+  After changes, run `python src/bot/main.py` to apply new configurations.
+</Callout>
